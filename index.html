@@ -1417,27 +1417,73 @@ updateOnlineStatus();
 
 // ============ SERVICE WORKER & PWA SETUP ============
 (function initPWA() {
-  // === 1. Generate SVG App Icon (inline, no external file needed) ===
-  const iconSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-    <defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#0077c8"/><stop offset="100%" style="stop-color:#00b4d8"/></linearGradient></defs>
-    <rect width="512" height="512" rx="96" fill="url(#g)"/>
-    <rect x="80" y="80" width="150" height="150" rx="16" fill="none" stroke="white" stroke-width="28"/>
-    <rect x="110" y="110" width="90" height="90" rx="8" fill="white"/>
-    <rect x="282" y="80" width="150" height="150" rx="16" fill="none" stroke="white" stroke-width="28"/>
-    <rect x="312" y="110" width="90" height="90" rx="8" fill="white"/>
-    <rect x="80" y="282" width="150" height="150" rx="16" fill="none" stroke="white" stroke-width="28"/>
-    <rect x="110" y="312" width="90" height="90" rx="8" fill="white"/>
-    <rect x="300" y="300" width="28" height="28" fill="white" rx="4"/>
-    <rect x="360" y="300" width="72" height="28" fill="white" rx="4"/>
-    <rect x="300" y="360" width="72" height="28" fill="white" rx="4"/>
-    <rect x="404" y="360" width="28" height="72" fill="white" rx="4"/>
-    <rect x="300" y="404" width="72" height="28" fill="white" rx="4"/>
-  </svg>`;
-  const iconDataUrl = 'data:image/svg+xml;base64,' + btoa(iconSVG);
+  // === 1. Generate PNG App Icon via Canvas (required for Chrome PWA icon) ===
+  function drawAppIcon(size) {
+    const canvas = document.createElement('canvas');
+    canvas.width = size; canvas.height = size;
+    const ctx = canvas.getContext('2d');
+    const s = size / 512;
+
+    // Background gradient rounded rect
+    const grad = ctx.createLinearGradient(0, 0, size, size);
+    grad.addColorStop(0, '#0077c8');
+    grad.addColorStop(1, '#00b4d8');
+    const r = 96 * s;
+    ctx.beginPath();
+    ctx.moveTo(r, 0); ctx.lineTo(size - r, 0);
+    ctx.quadraticCurveTo(size, 0, size, r);
+    ctx.lineTo(size, size - r);
+    ctx.quadraticCurveTo(size, size, size - r, size);
+    ctx.lineTo(r, size);
+    ctx.quadraticCurveTo(0, size, 0, size - r);
+    ctx.lineTo(0, r);
+    ctx.quadraticCurveTo(0, 0, r, 0);
+    ctx.closePath();
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    // Helper: draw QR corner square (outline + filled center)
+    function qrCorner(ox, oy, outer, inner, pad) {
+      ox *= s; oy *= s; outer *= s; inner *= s; pad *= s;
+      const cr = 16 * s;
+      // outer ring
+      ctx.strokeStyle = 'white';
+      ctx.lineWidth = 28 * s;
+      ctx.beginPath();
+      ctx.roundRect(ox, oy, outer, outer, cr);
+      ctx.stroke();
+      // inner fill
+      ctx.fillStyle = 'white';
+      ctx.beginPath();
+      ctx.roundRect(ox + pad, oy + pad, inner, inner, 8 * s);
+      ctx.fill();
+    }
+    qrCorner(80, 80, 150, 90, 30);
+    qrCorner(282, 80, 150, 90, 30);
+    qrCorner(80, 282, 150, 90, 30);
+
+    // QR data dots (bottom-right area)
+    ctx.fillStyle = 'white';
+    const dots = [
+      [300,300,28,28], [360,300,72,28],
+      [300,360,72,28], [404,360,28,72],
+      [300,404,72,28]
+    ];
+    dots.forEach(([x,y,w,h]) => {
+      ctx.beginPath();
+      ctx.roundRect(x*s, y*s, w*s, h*s, 4*s);
+      ctx.fill();
+    });
+
+    return canvas.toDataURL('image/png');
+  }
+
+  const icon192 = drawAppIcon(192);
+  const icon512 = drawAppIcon(512);
 
   // Set apple touch icon
   const appleIcon = document.getElementById('apple-touch-icon');
-  if (appleIcon) appleIcon.href = iconDataUrl;
+  if (appleIcon) appleIcon.href = icon192;
 
   // === 2. Inject Web App Manifest ===
   const manifest = {
@@ -1451,8 +1497,8 @@ updateOnlineStatus();
     orientation: "portrait-primary",
     categories: ["education", "productivity"],
     icons: [
-      { src: iconDataUrl, sizes: "192x192", type: "image/svg+xml", purpose: "any maskable" },
-      { src: iconDataUrl, sizes: "512x512", type: "image/svg+xml", purpose: "any maskable" }
+      { src: icon192, sizes: "192x192", type: "image/png", purpose: "any maskable" },
+      { src: icon512, sizes: "512x512", type: "image/png", purpose: "any maskable" }
     ]
   };
   const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
