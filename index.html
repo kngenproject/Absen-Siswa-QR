@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Absensi Siswa QR v2.3.0</title>
+<title>Absensi Siswa QR v2.4.0</title>
 
 <!-- PWA Meta Tags -->
 <meta name="theme-color" content="#0077c8">
@@ -246,7 +246,7 @@ tr:hover td { background: var(--primary-light); }
     <span class="material-icons-round">school</span>
   </div>
   <h1>Absensi Siswa QR</h1>
-  <span class="badge" title="Versi 2.3.0 — PWA Offline Ready">v2.3.0</span>
+  <span class="badge" title="Versi 2.4.0 — PWA Offline Ready">v2.4.0</span>
   <span id="pwa-offline-status"></span>
   <div style="margin-left:auto;display:flex;gap:8px;align-items:center;">
     <button onclick="showVersionInfo()" style="background:rgba(255,255,255,0.15);border:none;padding:7px 12px;font-size:12px;" title="Info Versi">
@@ -595,7 +595,7 @@ tr:hover td { background: var(--primary-light); }
         <span class="material-icons-round" style="font-size:32px;color:white;">school</span>
       </div>
       <h2 style="font-family:Poppins;color:var(--primary);font-size:22px;margin:0;">Absensi Siswa QR</h2>
-      <div style="display:inline-block;background:var(--primary-light);color:var(--primary);padding:4px 14px;border-radius:20px;font-size:13px;font-weight:700;margin-top:6px;">Versi 2.3.0</div>
+      <div style="display:inline-block;background:var(--primary-light);color:var(--primary);padding:4px 14px;border-radius:20px;font-size:13px;font-weight:700;margin-top:6px;">Versi 2.4.0</div>
     </div>
 
     <div style="border-top:1px solid var(--border);padding-top:16px;">
@@ -603,8 +603,19 @@ tr:hover td { background: var(--primary-light); }
 
       <div style="margin-bottom:14px;">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-          <span style="background:var(--primary);color:white;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:700;">v2.3.0</span>
+          <span style="background:var(--primary);color:white;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:700;">v2.4.0</span>
           <span style="font-size:12px;color:var(--text-muted);">Maret 2026 — Terbaru</span>
+        </div>
+        <ul style="font-size:13px;line-height:1.8;color:var(--text);padding-left:18px;">
+          <li>🖼️ <strong>Logo PWA baru</strong> — ikon aplikasi diperbarui dengan logo resmi</li>
+          <li>🔧 Icon kustom tampil saat install ke homescreen & splash screen</li>
+        </ul>
+      </div>
+
+            <div style="margin-bottom:14px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          <span style="background:#64748b;color:white;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:700;">v2.3.0</span>
+          <span style="font-size:12px;color:var(--text-muted);">Maret 2026</span>
         </div>
         <ul style="font-size:13px;line-height:1.8;color:var(--text);padding-left:18px;">
           <li>✨ <strong>PWA Offline penuh</strong> — bisa diinstall & dipakai tanpa internet</li>
@@ -1460,7 +1471,7 @@ updateOnlineStatus();
   // === 3. Register Service Worker (injected as Blob) ===
   if (!('serviceWorker' in navigator)) return;
 
-  const CACHE_NAME = 'absensi-qr-v2.3.0';
+  const CACHE_NAME = 'absensi-qr-v2.4.0';
   const URLS_TO_CACHE = [
     'https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Poppins:wght@400;600;700&display=swap',
     'https://fonts.googleapis.com/icon?family=Material+Icons+Round',
