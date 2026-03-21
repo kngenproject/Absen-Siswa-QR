@@ -68,15 +68,15 @@ header .badge { background: rgba(255,255,255,0.2); font-size: 11px; padding: 3px
 .card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 24px; margin-bottom: 20px; border: 1px solid rgba(0,119,200,0.07); }
 .card h3 { font-family: 'Poppins', sans-serif; font-size: 17px; font-weight: 700; color: var(--primary-dark); margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
 .card h3 .material-icons-round { font-size: 20px; color: var(--primary); }
-.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 20px; }
-.stat-card { padding: 20px; border-radius: var(--radius); text-align: center; position: relative; overflow: hidden; }
-.stat-card::before { content: ''; position: absolute; top: -20px; right: -20px; width: 80px; height: 80px; background: rgba(255,255,255,0.15); border-radius: 50%; }
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 0; }
+.stat-card { padding: 8px 4px; border-radius: var(--radius-sm); text-align: center; position: relative; overflow: hidden; }
+.stat-card::before { display: none; }
 .stat-card.blue { background: linear-gradient(135deg, #0077c8, #00b4d8); color: white; }
 .stat-card.green { background: linear-gradient(135deg, #16a34a, #4ade80); color: white; }
 .stat-card.orange { background: linear-gradient(135deg, #ea580c, #fb923c); color: white; }
 .stat-card.purple { background: linear-gradient(135deg, #7c3aed, #a78bfa); color: white; }
-.stat-card h3 { font-size: 36px; font-weight: 800; color: white; margin-bottom: 4px; }
-.stat-card p { font-size: 13px; opacity: 0.9; font-weight: 600; color: white; }
+.stat-card h3 { font-size: 20px; font-weight: 800; color: white; margin-bottom: 1px; line-height: 1.1; }
+.stat-card p { font-size: 10px; opacity: 0.9; font-weight: 600; color: white; line-height: 1.2; }
 button { background: var(--primary); color: white; border: none; padding: 11px 18px; border-radius: var(--radius-sm); cursor: pointer; font-size: 14px; font-weight: 700; font-family: 'Nunito', sans-serif; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px; }
 button:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
 button:active { transform: translateY(0); }
@@ -339,13 +339,16 @@ tr:hover td { background: var(--primary-light); }
         </div>
       </div>
     </div>
-    <div class="card" style="padding:14px;">
-      <h3 style="margin-bottom:10px;font-size:15px;"><span class="material-icons-round">bar_chart</span> Statistik Hari Ini</h3>
-      <div class="stats-grid" style="gap:8px;">
-        <div class="stat-card blue" style="padding:12px 8px;"><h3 id="today-count" style="font-size:26px;">0</h3><p style="font-size:11px;">Total Hadir</p></div>
-        <div class="stat-card green" style="padding:12px 8px;"><h3 id="on-time-count" style="font-size:26px;">0</h3><p style="font-size:11px;">Tepat Waktu</p></div>
-        <div class="stat-card orange" style="padding:12px 8px;"><h3 id="late-count" style="font-size:26px;">0</h3><p style="font-size:11px;">Terlambat</p></div>
-        <div class="stat-card purple" style="padding:12px 8px;"><h3 id="other-count" style="font-size:26px;">0</h3><p style="font-size:11px;">Izin / Sakit</p></div>
+    <div class="card" style="padding:8px 10px;">
+      <div style="display:flex;align-items:center;gap:5px;margin-bottom:6px;">
+        <span class="material-icons-round" style="font-size:14px;color:var(--primary);">bar_chart</span>
+        <span style="font-size:12px;font-weight:700;color:var(--primary-dark);">Statistik Hari Ini</span>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card blue"><h3 id="today-count">0</h3><p>Total Hadir</p></div>
+        <div class="stat-card green"><h3 id="on-time-count">0</h3><p>Tepat Waktu</p></div>
+        <div class="stat-card orange"><h3 id="late-count">0</h3><p>Terlambat</p></div>
+        <div class="stat-card purple"><h3 id="other-count">0</h3><p>Izin / Sakit</p></div>
       </div>
     </div>
   </div>
@@ -692,7 +695,7 @@ tr:hover td { background: var(--primary-light); }
 </div>
 
 <!-- SCRIPTS -->
-<script src="https://unpkg.com/html5-qrcode"></script>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -707,9 +710,22 @@ let generatedQRs = {}; // { nis: canvasDataUrl }
 let exportFormat = 'excel';
 let selectedKelas = new Set();
 
+// Helper: get local date string YYYY-MM-DD (avoid UTC timezone bug)
+function localDateStr(d) {
+  const dt = d || new Date();
+  return dt.getFullYear() + '-' +
+    String(dt.getMonth() + 1).padStart(2, '0') + '-' +
+    String(dt.getDate()).padStart(2, '0');
+}
+// Helper: format YYYY-MM-DD string to local display (avoid UTC parse bug)
+function formatLocalDate(dateStr) {
+  if (!dateStr) return '-';
+  const [y, m, d] = dateStr.split('-');
+  return new Date(+y, +m - 1, +d).toLocaleDateString('id-ID');
+}
 document.addEventListener('DOMContentLoaded', () => {
-  loadStudents(); loadAttendance(); updateStats(); updateKelasDropdowns();
   document.getElementById('filter-date').valueAsDate = new Date();
+  loadStudents(); loadAttendance(); updateStats(); updateKelasDropdowns();
   setupDragDrop();
 });
 
@@ -749,11 +765,11 @@ function onScanSuccess(decodedText) {
 }
 function recordAttendance(data, method) {
   const now = new Date();
-  const todayKey = now.toISOString().split('T')[0];
+  const todayKey = localDateStr(now);
   const existing = attendance.find(a => a.nis === data.nis && a.date === todayKey);
   if (existing) { showScanResult(data.nama, data.kelas, data.noAbsen, existing.time, existing.status, true); return; }
   const totalMin = now.getHours() * 60 + now.getMinutes();
-  let status = (method === 'Izin' || method === 'Sakit') ? method : (totalMin <= 450 ? 'Hadir' : 'Terlambat');
+  let status = (method === 'Izin' || method === 'Sakit' || method === 'Hadir' || method === 'Terlambat') ? method : (totalMin <= 450 ? 'Hadir' : 'Terlambat');
   const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
   const record = { nis: data.nis||'-', nama: data.nama, kelas: data.kelas||'-', noAbsen: data.noAbsen||'-', date: todayKey, time: timeStr, timestamp: now.toISOString(), status };
   attendance.push(record);
@@ -919,12 +935,12 @@ function renderAttendance() {
   tbody.innerHTML = '';
   filtered.forEach((rec, i) => {
     const row = document.createElement('tr');
-    row.innerHTML = `<td>${i+1}</td><td style="text-align:left;font-weight:700;">${rec.nama}</td><td>${rec.nis}</td><td><span style="background:var(--primary-light);color:var(--primary);padding:2px 10px;border-radius:12px;font-size:12px;font-weight:700;">${rec.kelas}</span></td><td>${rec.noAbsen}</td><td>${new Date(rec.date).toLocaleDateString('id-ID')}</td><td>${rec.time}</td><td><span class="status-badge status-${rec.status.toLowerCase()}">${rec.status}</span></td>`;
+    row.innerHTML = `<td>${i+1}</td><td style="text-align:left;font-weight:700;">${rec.nama}</td><td>${rec.nis}</td><td><span style="background:var(--primary-light);color:var(--primary);padding:2px 10px;border-radius:12px;font-size:12px;font-weight:700;">${rec.kelas}</span></td><td>${rec.noAbsen}</td><td>${formatLocalDate(rec.date)}</td><td>${rec.time}</td><td><span class="status-badge status-${rec.status.toLowerCase()}">${rec.status}</span></td>`;
     tbody.appendChild(row);
   });
 }
 function updateStats() {
-  const today = new Date().toISOString().split('T')[0];
+  const today = localDateStr();
   const todayData = attendance.filter(a => a.date === today);
   document.getElementById('today-count').textContent = todayData.length;
   document.getElementById('on-time-count').textContent = todayData.filter(a => a.status === 'Hadir').length;
@@ -936,23 +952,23 @@ function updateStats() {
 function exportToExcel() {
   const data = getFilteredAttendance();
   if (!data.length) { alert("Tidak ada data untuk diexport!"); return; }
-  const exportData = data.map((d, i) => ({ 'No': i+1, 'Nama Siswa': d.nama, 'NIS': d.nis, 'Kelas': d.kelas, 'No. Absen': d.noAbsen, 'Tanggal': new Date(d.date).toLocaleDateString('id-ID'), 'Jam Masuk': d.time, 'Status': d.status }));
+  const exportData = data.map((d, i) => ({ 'No': i+1, 'Nama Siswa': d.nama, 'NIS': d.nis, 'Kelas': d.kelas, 'No. Absen': d.noAbsen, 'Tanggal': formatLocalDate(d.date), 'Jam Masuk': d.time, 'Status': d.status }));
   const ws = XLSX.utils.json_to_sheet(exportData);
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "Absensi Siswa");
   ws['!cols'] = [{wch:5},{wch:22},{wch:14},{wch:8},{wch:10},{wch:14},{wch:10},{wch:12}];
   const dateFilter = document.getElementById('filter-date').value;
-  XLSX.writeFile(wb, `Absensi_Siswa_${dateFilter||'All'}_${new Date().toISOString().split('T')[0]}.xlsx`);
+  XLSX.writeFile(wb, `Absensi_Siswa_${dateFilter||'All'}_${localDateStr()}.xlsx`);
 }
 function exportToCSV() {
   const data = getFilteredAttendance();
   if (!data.length) { alert("Tidak ada data untuk diexport!"); return; }
   let csv = 'No,Nama Siswa,NIS,Kelas,No. Absen,Tanggal,Jam Masuk,Status\n';
-  data.forEach((d, i) => { csv += `${i+1},"${d.nama}","${d.nis}","${d.kelas}","${d.noAbsen}","${new Date(d.date).toLocaleDateString('id-ID')}","${d.time}","${d.status}"\n`; });
+  data.forEach((d, i) => { csv += `${i+1},"${d.nama}","${d.nis}","${d.kelas}","${d.noAbsen}","${formatLocalDate(d.date)}","${d.time}","${d.status}"\n`; });
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
   const link = document.createElement('a'); link.href = URL.createObjectURL(blob);
   const dateFilter = document.getElementById('filter-date').value;
-  link.download = `Absensi_Siswa_${dateFilter||'All'}_${new Date().toISOString().split('T')[0]}.csv`; link.click();
+  link.download = `Absensi_Siswa_${dateFilter||'All'}_${localDateStr()}.csv`; link.click();
 }
 function getFilteredAttendance() {
   const dateFilter = document.getElementById('filter-date').value;
@@ -1352,7 +1368,7 @@ async function exportQRToExcel() {
   const wsSummary = XLSX.utils.aoa_to_sheet(summaryData);
   XLSX.utils.book_append_sheet(wb, wsSummary, 'Ringkasan');
 
-  XLSX.writeFile(wb, `QR_Siswa_PerKelas_${new Date().toISOString().split('T')[0]}.xlsx`);
+  XLSX.writeFile(wb, `QR_Siswa_PerKelas_${localDateStr()}.xlsx`);
   alert(`✅ Export Excel berhasil!\n${keys.length} QR code dalam ${allKelas.length} sheet kelas.`);
 }
 
@@ -1384,7 +1400,7 @@ async function exportQRToZip() {
   const blob = await zip.generateAsync({ type: 'blob' });
   const link = document.createElement('a');
   link.href = URL.createObjectURL(blob);
-  link.download = `QR_Siswa_PerKelas_${new Date().toISOString().split('T')[0]}.zip`;
+  link.download = `QR_Siswa_PerKelas_${localDateStr()}.zip`;
   link.click();
   alert(`✅ Export ZIP berhasil!\n${Object.keys(generatedQRs).length} file QR PNG dalam ${allKelas.length} folder kelas.`);
 }
@@ -1441,8 +1457,21 @@ updateOnlineStatus();
     return canvas.toDataURL('image/png');
   }
 
-  const icon192 = appIconDataURI;
-  const icon512 = appIconDataURI;
+  // === Convert Data URI to Blob URL (required for PWA manifest icons) ===
+  function dataURItoBlob(dataURI) {
+    const parts = dataURI.split(',');
+    const mime = parts[0].match(/:(.*?);/)[1];
+    const bstr = atob(parts[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    while (n--) u8arr[n] = bstr.charCodeAt(n);
+    return new Blob([u8arr], { type: mime });
+  }
+
+  const iconBlob192 = dataURItoBlob(appIconDataURI);
+  const iconBlob512 = dataURItoBlob(appIconDataURI);
+  const icon192 = URL.createObjectURL(iconBlob192);
+  const icon512 = URL.createObjectURL(iconBlob512);
 
   // Set apple touch icon
   const appleIcon = document.getElementById('apple-touch-icon');
@@ -1475,7 +1504,7 @@ updateOnlineStatus();
   const URLS_TO_CACHE = [
     'https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Poppins:wght@400;600;700&display=swap',
     'https://fonts.googleapis.com/icon?family=Material+Icons+Round',
-    'https://unpkg.com/html5-qrcode',
+    'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js',
     'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js',
     'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',
     'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js'
