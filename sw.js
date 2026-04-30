@@ -1,4 +1,4 @@
-const CACHE_NAME = 'absensi-qr-v2.4.0';
+const CACHE_NAME = 'absensi-qr-v3.0.0';
 const URLS_TO_CACHE = [
   'https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Poppins:wght@400;600;700&display=swap',
   'https://fonts.googleapis.com/icon?family=Material+Icons+Round',
